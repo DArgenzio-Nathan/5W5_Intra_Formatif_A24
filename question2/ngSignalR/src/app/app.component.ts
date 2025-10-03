@@ -33,7 +33,18 @@ export class AppComponent {
       .build();
 
     // TODO: Mettre isConnected à true seulement une fois que la connection au Hub est faite
-    this.isConnected = true;
+    this.hubConnection!.on('UpdateNbUsers', (data) => {
+      this.nbUsers = data;
+    });
+    
+
+    this.hubConnection.start()
+      .then(() => {
+        this.isConnected = true;
+        console.log('La connexion est active!');
+      })
+      .catch(err => console.log('Error while starting connection: ' + err));
+
   }
 
   selectChoice(selectedChoice:number) {
@@ -45,8 +56,17 @@ export class AppComponent {
   }
 
   addMoney() {
+    this.hubConnection!.invoke('AddMoney', this.selectedChoice)
+    this.hubConnection!.on('UpdateMoney', (data) =>{
+       console.log('UpdateMoney reçu:', data);
+      this.money = data;
+    });
   }
 
   buyPizza() {
+    this.hubConnection!.on('UpdateNbPizzasAndMoney', (money, pizza) =>{
+      this.money = money;
+      this.nbPizzas = pizza;
+    });
   }
 }
